@@ -63,26 +63,6 @@ public class JavaObdReader {
         return reader;
     }
 
-    public JavaObdReader (String portName) throws SerialPortException {
-
-        JavaObdReader reader  = new JavaObdReader();
-
-        SerialPort sp = new SerialPort(portName);
-        sp.openPort();
-        sp.setParams(SerialPort.BAUDRATE_9600,
-                SerialPort.DATABITS_8,
-                SerialPort.STOPBITS_1,
-                SerialPort.PARITY_NONE);
-
-        sp.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN |
-                SerialPort.FLOWCONTROL_RTSCTS_OUT);
-
-        SerialInputStream sis = new SerialInputStream(sp);
-        sis.setTimeout(255);
-        is = sis;
-        os = new SerialOutputStream(sp);
-    }
-
     public void initOBDControlCommands() throws IOException, InterruptedException {
 
         /**

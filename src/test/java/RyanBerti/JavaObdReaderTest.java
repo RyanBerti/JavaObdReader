@@ -18,8 +18,7 @@ public class JavaObdReaderTest {
              * be updated accordingly
              */
 
-            //JavaObdReader jobdinstance = JavaObdReader.getJavaObdReaderForSerialPort("/dev/ttys002");
-            JavaObdReader jobdinstance = new JavaObdReader("/dev/ttys002");
+            JavaObdReader jobdinstance = JavaObdReader.getJavaObdReaderForSerialPort("/dev/ttys002");
 
             jobdinstance.initOBDControlCommands();
             jobdinstance.initSupportedOdbCommands();
