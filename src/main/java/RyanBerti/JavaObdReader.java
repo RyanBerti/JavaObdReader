@@ -18,6 +18,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,9 +28,13 @@ import java.util.Set;
  */
 public class JavaObdReader {
 
-    private InputStream is;
-    private OutputStream os;
+    //public for now so SimpleBenchmarkTests can validate throughput
+    InputStream is;
+    OutputStream os;
+
+    private int numCommands = 0;
     private ObdMultiCommand multiCommand;
+    private List<String> commandList;
 
     private JavaObdReader() {}
 
@@ -66,9 +73,9 @@ public class JavaObdReader {
     public void initOBDControlCommands() throws IOException, InterruptedException {
 
         /**
-         * These are exceptions thrown by java-obd-api with socket
-         * UnsupportedCommandException | MisunderstoodCommandException | NoDataException
-         * The serial version will throw a SerialPortTimeoutException
+         * Unclear if these are required when testing against obdsim, or even if they're
+         * necessary when testing against hardware, though they are included in this post
+         * http://blog.lemberg.co.uk/how-guide-obdii-reader-app-development
          */
 
         try {
@@ -89,10 +96,25 @@ public class JavaObdReader {
     }
 
     public void initSupportedOdbCommands() throws IOException, InterruptedException {
+        initSupportedOdbCommands(Integer.MAX_VALUE);
+    }
+
+    public void initSupportedOdbCommands(int maxCommands) throws IOException, InterruptedException {
+
+        numCommands = maxCommands;
+        commandList = new ArrayList<>();
         multiCommand = new ObdMultiCommand();
-        addSupportedEngineCommands(multiCommand);
-        addSupportedFuelCommands(multiCommand);
-        addSupportedPressureCommands(multiCommand);
+
+        if (maxCommands > 0)
+            maxCommands -= addSupportedEngineCommands(multiCommand, maxCommands);
+        if (maxCommands > 0)
+            maxCommands -= addSupportedFuelCommands(multiCommand, maxCommands);
+        if (maxCommands > 0)
+            maxCommands -= addSupportedPressureCommands(multiCommand,maxCommands);
+        if (maxCommands > 0)
+            maxCommands -= addSupportedTemperatureCommands(multiCommand,maxCommands);
+
+        numCommands -= maxCommands;
     }
 
     public String runCommandsReturnString() throws IOException, InterruptedException {
@@ -100,10 +122,15 @@ public class JavaObdReader {
         return multiCommand.getFormattedResult();
     }
 
-    private void addSupportedEngineCommands(ObdMultiCommand multicmd) throws IOException, InterruptedException {
+    private int addSupportedEngineCommands(ObdMultiCommand multicmd, int maxCommands) throws IOException, InterruptedException {
 
         if (multicmd == null)
             throw new IOException("Input arg must be non-null");
+
+        if (maxCommands == 0)
+            return 0;
+
+        int commandsAdded = 0;
 
         try {
 
@@ -114,7 +141,10 @@ public class JavaObdReader {
                 try {
                     obdcmd.run(is,os);
                     multicmd.add(obdcmd);
+                    commandList.add(c.toString());
                     System.out.println(c.toString() + " is added to engine multicmd");
+                    if (++commandsAdded == maxCommands)
+                        return commandsAdded;
                 } catch (UnsupportedCommandException | MisunderstoodCommandException | NoDataException e) {}
             }
 
@@ -124,7 +154,10 @@ public class JavaObdReader {
                 try {
                     tempcmd.run(is,os);
                     multicmd.add(tempcmd);
+                    commandList.add(c.toString());
                     System.out.println(c.toString() + " is added to engine multicmd");
+                    if (++commandsAdded == maxCommands)
+                        return commandsAdded;
                 } catch (UnsupportedCommandException | MisunderstoodCommandException | NoDataException e) {}
             }
 
@@ -134,22 +167,29 @@ public class JavaObdReader {
                 try {
                     percentcmd.run(is,os);
                     multicmd.add(percentcmd);
+                    commandList.add(c.toString());
                     System.out.println(c.toString() + " is added to engine multicmd");
+                    if (++commandsAdded == maxCommands)
+                        return commandsAdded;
                 } catch (UnsupportedCommandException | MisunderstoodCommandException | NoDataException e) {}
             }
 
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
+        return commandsAdded;
     }
 
-    private void addSupportedFuelCommands(ObdMultiCommand multicmd) throws IOException, InterruptedException {
+    private int addSupportedFuelCommands(ObdMultiCommand multicmd, int maxCommands) throws IOException, InterruptedException {
 
         if (multicmd == null)
             throw new IOException("Input arg must be non-null");
+
+        if (maxCommands == 0)
+            return 0;
+
+        int commandsAdded = 0;
 
         try {
 
@@ -160,7 +200,10 @@ public class JavaObdReader {
                 try {
                     obdcmd.run(is,os);
                     multicmd.add(obdcmd);
+                    commandList.add(c.toString());
                     System.out.println(c.toString() + " is added to fuel multicmd");
+                    if (++commandsAdded == maxCommands)
+                        return commandsAdded;
                 } catch (UnsupportedCommandException | MisunderstoodCommandException | NoDataException e) {}
             }
 
@@ -170,7 +213,10 @@ public class JavaObdReader {
                 try {
                     tempcmd.run(is,os);
                     multicmd.add(tempcmd);
+                    commandList.add(c.toString());
                     System.out.println(c.toString() + " is added to fuel multicmd");
+                    if (++commandsAdded == maxCommands)
+                        return commandsAdded;
                 } catch (UnsupportedCommandException | MisunderstoodCommandException | NoDataException e) {}
             }
 
@@ -180,22 +226,30 @@ public class JavaObdReader {
                 try {
                     percentcmd.run(is,os);
                     multicmd.add(percentcmd);
+                    commandList.add(c.toString());
                     System.out.println(c.toString() + " is added to fuel multicmd");
+                    if (++commandsAdded == maxCommands)
+                        return commandsAdded;
                 } catch (UnsupportedCommandException | MisunderstoodCommandException | NoDataException e) {}
             }
 
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
+        return commandsAdded;
+
     }
 
-    private ObdMultiCommand addSupportedPressureCommands(ObdMultiCommand multicmd) throws IOException, InterruptedException {
+    private int addSupportedPressureCommands(ObdMultiCommand multicmd, int maxCommands) throws IOException, InterruptedException {
 
         if (multicmd == null)
             throw new IOException("Input arg must be non-null");
+
+        if (maxCommands == 0)
+            return 0;
+
+        int commandsAdded = 0;
 
         try {
 
@@ -206,23 +260,29 @@ public class JavaObdReader {
                 try {
                     pressurecmd.run(is,os);
                     multicmd.add(pressurecmd);
+                    commandList.add(c.toString());
                     System.out.println(c.toString() + " is added to pressure multicmd");
+                    if (++commandsAdded == maxCommands)
+                        return commandsAdded;
                 } catch (UnsupportedCommandException | MisunderstoodCommandException | NoDataException e) {}
             }
 
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
-        return multicmd;
+        return commandsAdded;
     }
 
-    private void addSupportedTemperatureCommands(ObdMultiCommand multicmd) throws IOException, InterruptedException {
+    private int addSupportedTemperatureCommands(ObdMultiCommand multicmd, int maxCommands) throws IOException, InterruptedException {
 
         if (multicmd == null)
             throw new IOException("Input arg must be non-null");
+
+        if (maxCommands == 0)
+            return 0;
+
+        int commandsAdded = 0;
 
         try {
 
@@ -233,21 +293,31 @@ public class JavaObdReader {
                 try {
                     temperaturecmd.run(is,os);
                     multicmd.add(temperaturecmd);
+                    commandList.add(c.toString());
                     System.out.println(c.toString() + " is added to pressure multicmd");
+                    if (++commandsAdded == maxCommands)
+                        return commandsAdded;
                 } catch (UnsupportedCommandException | MisunderstoodCommandException | NoDataException e) {}
             }
 
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
+        return commandsAdded;
+
+    }
+
+    public int getCommandCount() {
+        return numCommands;
+    }
+
+    public String getCommandListAsString() {
+        return Arrays.toString(commandList.toArray());
     }
 
     public void closeOBDConnection() throws IOException {
         is.close();
         os.close();
     }
-
 }
