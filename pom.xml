@@ -97,7 +97,7 @@
                             <groups>RyanBerti.SocketTests</groups>
                             <systemPropertyVariables>
                                 <test.socket.host>${test.socket.host}</test.socket.host>
-                                <test.socket.host>${test.socket.port}</test.socket.host>
+                                <test.socket.port>${test.socket.port}</test.socket.port>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
