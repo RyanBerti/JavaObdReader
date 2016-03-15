@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Created by Ryan Berti on 2/18/16.
  */
-public class JavaObdReader {
+public class JavaObdReader{
 
     //public for now so SimpleBenchmarkTests can validate throughput
     InputStream is;
@@ -115,11 +115,18 @@ public class JavaObdReader {
             maxCommands -= addSupportedTemperatureCommands(multiCommand,maxCommands);
 
         numCommands -= maxCommands;
+
+        multiCommand.setConvertRawData(false);
     }
 
-    public String runCommandsReturnString() throws IOException, InterruptedException {
+    public String runCommandsReturnRawData() throws IOException, InterruptedException {
         multiCommand.sendCommands(is, os);
-        return multiCommand.getFormattedResult();
+        return multiCommand.getRawResult();
+    }
+
+    public String runCommandsReturnFormattedResult() throws IOException, InterruptedException {
+        multiCommand.sendCommands(is, os);
+        return multiCommand.convertRawResultToFormattedResult(multiCommand.getRawResult());
     }
 
     private int addSupportedEngineCommands(ObdMultiCommand multicmd, int maxCommands) throws IOException, InterruptedException {

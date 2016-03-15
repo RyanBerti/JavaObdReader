@@ -30,7 +30,7 @@ public class JavaObdReaderTest {
             long startTime = System.currentTimeMillis();
             FileOutputStream fos2 = new FileOutputStream("obddata.txt");
             for (int i = 0; i < numCommands; i++) {
-                fos2.write(jobdinstance.runCommandsReturnString().getBytes());
+                fos2.write(jobdinstance.runCommandsReturnFormattedResult().getBytes());
                 fos2.write('\n');
             }
             fos2.close();
@@ -64,7 +64,7 @@ public class JavaObdReaderTest {
             long startTime = System.currentTimeMillis();
             FileOutputStream fos2 = new FileOutputStream("obddata.txt");
             for (int i = 0; i < numCommands; i++) {
-                fos2.write(jobdinstance.runCommandsReturnString().getBytes());
+                fos2.write(jobdinstance.runCommandsReturnFormattedResult().getBytes());
                 fos2.write('\n');
             }
             fos2.close();
