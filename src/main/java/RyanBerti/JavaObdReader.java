@@ -38,6 +38,15 @@ public class JavaObdReader{
 
     private JavaObdReader() {}
 
+    /**
+     * Static factory method for creating JavaObdReader instances that read commands from sockets
+     * @param host The hostname or ip address of the OBD2 device (if connected to OBD2 device via
+     *             wifi, this is usually 192.168.0.10)
+     * @param port The port number of the OBD2 server (by default, wifi enabled OBD2 devices run
+     *             their server on port 3500)
+     * @return A JavaOBDReader instance
+     * @throws IOException
+     */
     public static JavaObdReader getJavaObdReaderForSocket(String host, Integer port) throws IOException {
 
         JavaObdReader reader = new JavaObdReader();
@@ -49,6 +58,13 @@ public class JavaObdReader{
         return reader;
     }
 
+    /**
+     * Static factory method for creating JavaObdReader instances that read commands from serial ports
+     * directly (this can also be used for interfacing with obdsim)
+     * @param portName The serial port name (usually in the form /dev/ttys[0-9]{4})
+     * @return A JavaOBDReader instance
+     * @throws SerialPortException
+     */
     public static JavaObdReader getJavaObdReaderForSerialPort(String portName) throws SerialPortException {
 
         JavaObdReader reader  = new JavaObdReader();
@@ -70,6 +86,11 @@ public class JavaObdReader{
         return reader;
     }
 
+    /**
+     * Submit the OBD control commands which may or may not be necessary for the given OBD2 device
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void initOBDControlCommands() throws IOException, InterruptedException {
 
         /**
@@ -95,10 +116,24 @@ public class JavaObdReader{
         } catch (UnsupportedCommandException | MisunderstoodCommandException | NoDataException e) {}
     }
 
+    /**
+     * Determine all of the commands that are supported by the given OBD2 device by submitting each
+     * OBDCommand instance and adding that command to the internal ObdMultiCommand instance if the
+     * response is valid; set the ObdMultiCommand instance to read raw data only
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void initSupportedOdbCommands() throws IOException, InterruptedException {
         initSupportedOdbCommands(Integer.MAX_VALUE);
     }
 
+    /**
+     * Get the first N commands that are supported by the given OBD2 device by submitting each
+     * OBDCommand instance and adding that command to the internal ObdMultiCommand instance if the
+     * response is valid; set the ObdMultiCommand instance to read raw data only
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void initSupportedOdbCommands(int maxCommands) throws IOException, InterruptedException {
 
         numCommands = maxCommands;
@@ -119,16 +154,38 @@ public class JavaObdReader{
         multiCommand.setConvertRawData(false);
     }
 
+    /**
+     * Run the OBDCommands that are associated with the internal ObdMultiCommand instance
+     * @return A comma separated string of raw data
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public String runCommandsReturnRawData() throws IOException, InterruptedException {
         multiCommand.sendCommands(is, os);
         return multiCommand.getRawResult();
     }
 
+    /**
+     * Run the OBDCommands that are associated with the internal ObdMultiCommand instance
+     * @return A comma separated string of formatted data
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public String runCommandsReturnFormattedResult() throws IOException, InterruptedException {
         multiCommand.sendCommands(is, os);
         return multiCommand.convertRawResultToFormattedResult(multiCommand.getRawResult());
     }
 
+    /**
+     * Loop through all of the engine commands defined by the java-obd-api library; submit each command
+     * to determine if it is supported by the given OBD2 device and if so add it to the ObdMultiCommand
+     * instance. Only add maxCommands to the ObdMultiCommand instance
+     * @param multicmd the ObdMultiCommand instance
+     * @param maxCommands the maximum number of engine commands to add to the ObdMultiCommand instance
+     * @return the total number of engine commands added to the ObdMultiCommand instance
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private int addSupportedEngineCommands(ObdMultiCommand multicmd, int maxCommands) throws IOException, InterruptedException {
 
         if (multicmd == null)
@@ -188,6 +245,16 @@ public class JavaObdReader{
         return commandsAdded;
     }
 
+    /**
+     * Loop through all of the fuel commands defined by the java-obd-api library; submit each command
+     * to determine if it is supported by the given OBD2 device and if so add it to the ObdMultiCommand
+     * instance. Only add maxCommands to the ObdMultiCommand instance
+     * @param multicmd the ObdMultiCommand instance
+     * @param maxCommands the maximum number of fuel commands to add to the ObdMultiCommand instance
+     * @return the total number of fuel commands added to the ObdMultiCommand instance
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private int addSupportedFuelCommands(ObdMultiCommand multicmd, int maxCommands) throws IOException, InterruptedException {
 
         if (multicmd == null)
@@ -248,6 +315,16 @@ public class JavaObdReader{
 
     }
 
+    /**
+     * Loop through all of the pressure commands defined by the java-obd-api library; submit each command
+     * to determine if it is supported by the given OBD2 device and if so add it to the ObdMultiCommand
+     * instance. Only add maxCommands to the ObdMultiCommand instance
+     * @param multicmd the ObdMultiCommand instance
+     * @param maxCommands the maximum number of fuel commands to add to the ObdMultiCommand instance
+     * @return the total number of engine commands added to the ObdMultiCommand instance
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private int addSupportedPressureCommands(ObdMultiCommand multicmd, int maxCommands) throws IOException, InterruptedException {
 
         if (multicmd == null)
@@ -281,6 +358,16 @@ public class JavaObdReader{
         return commandsAdded;
     }
 
+    /**
+     * Loop through all of the temperature commands defined by the java-obd-api library; submit each command
+     * to determine if it is supported by the given OBD2 device and if so add it to the ObdMultiCommand
+     * instance. Only add maxCommands to the ObdMultiCommand instance
+     * @param multicmd the ObdMultiCommand instance
+     * @param maxCommands the maximum number of temperature commands to add to the ObdMultiCommand instance
+     * @return the total number of temperature commands added to the ObdMultiCommand instance
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private int addSupportedTemperatureCommands(ObdMultiCommand multicmd, int maxCommands) throws IOException, InterruptedException {
 
         if (multicmd == null)
@@ -315,14 +402,26 @@ public class JavaObdReader{
 
     }
 
+    /**
+     * Get the number of ObdCommands associated with the internal ObdMultiCommand
+     * @return number of ObdCommands
+     */
     public int getCommandCount() {
         return numCommands;
     }
 
+    /**
+     * Get the full names of all the ObdCommands associated with the internal ObdMultiCommand
+     * @return comma separated list of fully formed class names, bound by brackets
+     */
     public String getCommandListAsString() {
         return Arrays.toString(commandList.toArray());
     }
 
+    /**
+     * Close the underlying input and output streams associated with this JavaObdReader instance
+     * @throws IOException
+     */
     public void closeOBDConnection() throws IOException {
         is.close();
         os.close();

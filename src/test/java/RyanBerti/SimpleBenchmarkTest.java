@@ -36,6 +36,7 @@ public class SimpleBenchmarkTest {
             }
             long endTime = System.currentTimeMillis();
             System.out.println("Running " + numCommands + " commands took " + ((endTime - startTime) / 1000) + " seconds");
+            reader.closeOBDConnection();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -67,6 +68,7 @@ public class SimpleBenchmarkTest {
             }
             long endTime = System.currentTimeMillis();
             System.out.println("Running " + numCommands + " commands took " + ((endTime - startTime) / 1000) + " seconds");
+            reader.closeOBDConnection();
 
         } catch (IOException e) {
             e.printStackTrace();
